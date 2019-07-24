@@ -35,7 +35,7 @@ BEGIN_MESSAGE_MAP(CJiaohuDlg, CDialogEx)
 	ON_WM_HSCROLL()
 	ON_BN_CLICKED(IDC_BUTTON_OPEN, &CJiaohuDlg::OnBnClickedButtonOpen)
 	ON_BN_CLICKED(IDC_BUTTON_PLAY, &CJiaohuDlg::OnBnClickedButtonPlay)
-//	ON_WM_SIZE()
+
 ON_BN_CLICKED(IDC_BUTTON_PLAY_SLOWLY, &CJiaohuDlg::OnBnClickedButtonPlaySlowly)
 ON_BN_CLICKED(IDC_BUTTON_PLAY_FAST, &CJiaohuDlg::OnBnClickedButtonPlayFast)
 ON_BN_CLICKED(IDC_BUTTON_PLAY_FRAME, &CJiaohuDlg::OnBnClickedButtonPlayFrame)
@@ -264,7 +264,7 @@ void CJiaohuDlg::OnBnClickedButtonOpen()
 	GetDlgItem(IDC_EDIT_TIMELENGTH)->ShowWindow(SW_SHOW);
 	GetDlgItem(IDC_EDIT_TIMELENGTH)->SetWindowText(time_display);
 	GetDlgItem(IDC_SLIDER_SEEK)->EnableWindow(TRUE);
-	GetDlgItem(IDC_BUTTON_PLAY)->SetWindowText(_T("暂停"));
+	GetDlgItem(IDC_BUTTON_PLAY)->SetWindowText(_T("停止"));
 	m_slider_seek.SetPos(0);
 	m_slider_seek.SetRange(0, m_file_duration, 0);
 	m_streamstate->read_tid = SDL_CreateThread(read_thread, (void*)this);
@@ -1121,23 +1121,7 @@ void CJiaohuDlg::onstop()
 	m_slider_seek.SetPos(0);
 	Invalidate(TRUE);
 }
-void CJiaohuDlg::OnBnClickedButtonPlay()
-{
-	// TODO: 在此添加控件通知处理程序代码
-	if (m_pause_play)
-	{
-		//暂停
-		SDL_PauseAudio(1);
-		GetDlgItem(IDC_BUTTON_PLAY)->SetWindowText(_T("播放"));
-	}
-	else
-	{
-		//播放
-		SDL_PauseAudio(0);
-		GetDlgItem(IDC_BUTTON_PLAY)->SetWindowText(_T("暂停"));
-	}
-	m_pause_play = !m_pause_play;
-}
+
 int CJiaohuDlg::InitProgram()
 {
 	int flags;
@@ -1590,7 +1574,23 @@ int CJiaohuDlg::Access_control_position()
 	return 1;
 }
 
-
+void CJiaohuDlg::OnBnClickedButtonPlay()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	if (m_pause_play)
+	{
+		//暂停
+		SDL_PauseAudio(1);
+		GetDlgItem(IDC_BUTTON_PLAY)->SetWindowText(_T("播放"));
+	}
+	else
+	{
+		//播放
+		SDL_PauseAudio(0);
+		GetDlgItem(IDC_BUTTON_PLAY)->SetWindowText(_T("停止"));
+	}
+	m_pause_play = !m_pause_play;
+}
 
 void CJiaohuDlg::OnBnClickedButtonPlaySlowly()
 {
@@ -1609,6 +1609,13 @@ void CJiaohuDlg::OnBnClickedButtonPlaySlowly()
 		slow = 0;
 		GetDlgItem(IDC_BUTTON_PLAY_SLOWLY)->SetWindowText(_T("慢放"));
 		GetDlgItem(IDC_BUTTON_PLAY_FAST)->SetWindowText(_T("快放"));
+	}
+	if (!m_pause_play)
+	{
+		//播放
+		SDL_PauseAudio(0);
+		GetDlgItem(IDC_BUTTON_PLAY)->SetWindowText(_T("停止"));
+		m_pause_play = !m_pause_play;
 	}
 }
 
@@ -1631,13 +1638,24 @@ void CJiaohuDlg::OnBnClickedButtonPlayFast()
 		GetDlgItem(IDC_BUTTON_PLAY_SLOWLY)->SetWindowText(_T("慢放"));
 		GetDlgItem(IDC_BUTTON_PLAY_FAST)->SetWindowText(_T("快放"));
 	}
-	
+	if (!m_pause_play)
+	{
+		//播放
+		SDL_PauseAudio(0);
+		GetDlgItem(IDC_BUTTON_PLAY)->SetWindowText(_T("停止"));
+		m_pause_play = !m_pause_play;
+	}
 }
 
 
 void CJiaohuDlg::OnBnClickedButtonPlayFrame()
 {
 	// TODO: 在此添加控件通知处理程序代码
-
+	if (m_pause_play)
+	{
+		//暂停
+		SDL_PauseAudio(1);
+		GetDlgItem(IDC_BUTTON_PLAY)->SetWindowText(_T("播放"));
+	}
 
 }

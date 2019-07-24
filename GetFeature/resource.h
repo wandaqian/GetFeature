@@ -2,6 +2,11 @@
 // Microsoft Visual C++ 生成的包含文件。
 // 供 GetFeature.rc 使用
 //
+#define IDC_EDIT_TIMELENGTH              1045
+#define IDC_SLIDER_SEEK              1011
+#define IDC_PROGRESS              1046
+#define IDC_LIST_VIDEOCLIP              1027
+#define IDC_BUTTON_START                 1013
 #define SW_HIDE                         0
 #define HIDE_WINDOW                     0
 #define WM_NULL                         0x0000
