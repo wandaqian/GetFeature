@@ -2,6 +2,7 @@
 
 
 // CChachongDlg 对话框
+//test remote project
 
 class CChachongDlg : public CDialogEx
 {
