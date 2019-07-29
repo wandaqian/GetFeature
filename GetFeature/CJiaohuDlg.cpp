@@ -32,9 +32,10 @@ void CJiaohuDlg::DoDataExchange(CDataExchange* pDX)
 
 
 BEGIN_MESSAGE_MAP(CJiaohuDlg, CDialogEx)
-	ON_WM_HSCROLL()
-	ON_BN_CLICKED(IDC_BUTTON_OPEN, &CJiaohuDlg::OnBnClickedButtonOpen)
-	ON_BN_CLICKED(IDC_BUTTON_PLAY, &CJiaohuDlg::OnBnClickedButtonPlay)
+ON_WM_HSCROLL()
+ON_WM_SIZE()
+ON_BN_CLICKED(IDC_BUTTON_OPEN, &CJiaohuDlg::OnBnClickedButtonOpen)
+ON_BN_CLICKED(IDC_BUTTON_PLAY, &CJiaohuDlg::OnBnClickedButtonPlay)
 
 ON_BN_CLICKED(IDC_BUTTON_PLAY_SLOWLY, &CJiaohuDlg::OnBnClickedButtonPlaySlowly)
 ON_BN_CLICKED(IDC_BUTTON_PLAY_FAST, &CJiaohuDlg::OnBnClickedButtonPlayFast)
@@ -47,16 +48,113 @@ BOOL CJiaohuDlg::OnInitDialog()
 	GetDlgItem(IDC_PROGRESS)->ShowWindow(SW_HIDE);
 	GetDlgItem(IDC_SLIDER_SEEK)->EnableWindow(FALSE);
 	// TODO:  在此添加额外的初始化
-		//初始化滚动条变量
+	/////////////////////////////////////////////////////////////////////////////
+	//初始化滚动条变量
 	m_slider_seek.SetPos(0);
 	m_slider_seek.SetPageSize(10);//滚动条每次seek的间隔 //10秒
-		//初始化全局变量 编解码库 SDL初始化等
-	InitProgram();
+	InitProgram();//初始化全局变量 编解码库 SDL初始化等
+
+	/*
+	CRect rect; // 设置控件随窗口变化
+	GetClientRect(&rect);     //取客户区大小  
+	old.x = rect.right - rect.left;
+	old.y = rect.bottom - rect.top;
+	int cx = GetSystemMetrics(SM_CXFULLSCREEN);
+	int cy = GetSystemMetrics(SM_CYFULLSCREEN);
+	CRect rt;
+	SystemParametersInfo(SPI_GETWORKAREA, 0, &rt, 0);
+	cy = rt.bottom;
+	MoveWindow(0, 0, cx, cy);
+	*/
 	//////////////////////////////////////////////////////////////////////////
 	InitVariable();
+	get_control_original_proportion();
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // 异常: OCX 属性页应返回 FALSE
 }
+
+
+/*
+void CJiaohuDlg::OnPaint()
+{
+	CString ss;
+	ss.Format(_T("%s"), IsIconic());
+	MessageBox(ss, NULL, MB_OK);
+	if (IsIconic())
+	{
+		CPaintDC dc(this); // device context for painting
+
+		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
+
+		// Center icon in client rectangle
+		int cxIcon = GetSystemMetrics(SM_CXICON);
+		int cyIcon = GetSystemMetrics(SM_CYICON);
+		CString show;
+		show.Format(_T("%d,%d"), cxIcon, cyIcon);
+		MessageBox(show, NULL, MB_OK);
+
+		CRect rect;
+		GetClientRect(&rect);
+		int x = (rect.Width() - cxIcon + 1) / 2;
+		int y = (rect.Height() - cyIcon + 1) / 2;
+
+		// Draw the icon
+		dc.DrawIcon(x, y, m_hIcon);
+	}
+	else
+	{
+		CDialog::OnPaint();
+	}
+}
+
+void CJiaohuDlg::ReSize(void)
+{
+	float fsp[2];
+	POINT Newp; //获取现在对话框的大小
+	CRect recta;
+	GetClientRect(&recta);     //取客户区大小  
+	Newp.x = recta.right - recta.left;
+	Newp.y = recta.bottom - recta.top;
+	fsp[0] = (float)Newp.x / old.x;
+	fsp[1] = (float)Newp.y / old.y;
+	CRect Rect;
+	int woc;
+	CPoint OldTLPoint, TLPoint; //左上角
+	CPoint OldBRPoint, BRPoint; //右下角
+	HWND  hwndChild = ::GetWindow(m_hWnd, GW_CHILD);  //列出所有控件  
+	while (hwndChild)
+	{
+		woc = ::GetDlgCtrlID(hwndChild);//取得ID
+		GetDlgItem(woc)->GetWindowRect(Rect);
+		ScreenToClient(Rect);
+		OldTLPoint = Rect.TopLeft();
+		TLPoint.x = long(OldTLPoint.x * fsp[0]);
+		TLPoint.y = long(OldTLPoint.y * fsp[1]);
+		OldBRPoint = Rect.BottomRight();
+		BRPoint.x = long(OldBRPoint.x * fsp[0]);
+		BRPoint.y = long(OldBRPoint.y * fsp[1]);
+		Rect.SetRect(TLPoint, BRPoint);
+		GetDlgItem(woc)->MoveWindow(Rect, TRUE);
+		hwndChild = ::GetWindow(hwndChild, GW_HWNDNEXT);
+	}
+	old = Newp;
+}
+
+void CJiaohuDlg::OnSize(UINT nType, int cx, int cy)
+{
+	CString onsizeS;
+	onsizeS.Format(_T("调用OnSize函数"));
+	MessageBox(onsizeS, NULL, MB_OK);
+
+	if (nType != SIZE_MINIMIZED)  //判断窗口是不是最小化了，因为窗口最小化之后 ，
+		//窗口的长和宽会变成0，当前一次变化的时就会出现除以0的错误操作
+	{
+		ReSize();
+	}
+	CDialogEx::OnSize(nType, cx, cy);
+}
+*/
+
 int SplitString(LPCTSTR lpszStr, LPCTSTR lpszSplit, CStringArray& rArrString, BOOL bAllowNullString)
 {
 	rArrString.RemoveAll();
@@ -147,10 +245,10 @@ void CJiaohuDlg::OnBnClickedButtonOpen()
 		//输入信息错误写入
 		av_dump_format(m_streamstate->pFormatCtx, 0, m_sourceFile, 0);
 
-		//得到文件中时常
+		//得到文件中时长
 		m_file_duration = m_streamstate->pFormatCtx->duration / 1000.0 / 1000.0; //从纳秒转换成秒
 
-		//如果没有文件总时常
+		//如果没有文件总时长
 		if (m_file_duration < 0)
 		{
 			m_file_duration = 0;
@@ -220,7 +318,7 @@ void CJiaohuDlg::OnBnClickedButtonOpen()
 	}
 	m_stream_type = 3;
 	//////////////////////////////////////////////////////////////////////////
-	//文件打开设置文件时常
+	//文件打开设置文件时长
 
 	
 	h_minute = (int)m_file_duration / 60;
@@ -270,7 +368,7 @@ void CJiaohuDlg::OnBnClickedButtonOpen()
 	m_streamstate->read_tid = SDL_CreateThread(read_thread, (void*)this);
 	if (!m_streamstate->read_tid)
 	{
-		MessageBox(_T("创建读取线程失败 清楚重新创建"), NULL, MB_OK);
+		MessageBox(_T("创建读取线程失败 清除重新创建"), NULL, MB_OK);
 		goto end;
 	}
 end:
@@ -1059,6 +1157,7 @@ fail:
 		//pDlg->m_fs_screen_width;
 		//pDlg->m_fs_screen_height; 
 		//AVPacket m_flush_pkt;
+		
 		pDlg->m_sourceFile = NULL;
 		pDlg->m_file_duration = 0.0;
 		pDlg->m_video_dec_ctx = NULL;
@@ -1658,4 +1757,49 @@ void CJiaohuDlg::OnBnClickedButtonPlayFrame()
 		GetDlgItem(IDC_BUTTON_PLAY)->SetWindowText(_T("播放"));
 	}
 
+}
+
+
+void CJiaohuDlg::OnSize(UINT nType, int cx, int cy)
+{
+	if (nType != SIZE_MINIMIZED)  //判断窗口是不是最小化了，因为窗口最小化之后 ，
+			//窗口的长和宽会变成0，当前一次变化的时就会出现除以0的错误操作
+	{
+
+		CRect rect;// 获取当前窗口大小
+		for (std::list<control*>::iterator it = m_con_list.begin(); it != m_con_list.end(); it++) {
+			CWnd* pWnd = GetDlgItem((*it)->Id);//获取ID为woc的空间的句柄
+			pWnd->GetWindowRect(&rect);
+			ScreenToClient(&rect);//将控件大小转换为在对话框中的区域坐标
+			rect.left = (*it)->scale[0] * cx;
+			rect.right = (*it)->scale[1] * cx;
+			rect.top = (*it)->scale[2] * cy;
+			rect.bottom = (*it)->scale[3] * cy;
+			pWnd->MoveWindow(rect);//设置控件大小
+		}
+
+	}
+	GetClientRect(&m_rect);//将变化后的对话框大小设为旧大小
+	CDialogEx::OnSize(nType, cx, cy);
+	Invalidate(TRUE);
+}
+
+static int i = 0;
+void CJiaohuDlg::get_control_original_proportion() {
+	HWND hwndChild = ::GetWindow(m_hWnd, GW_CHILD);
+	while (hwndChild)
+	{
+		CRect rect;//获取当前窗口的大小
+		control* tempcon = new control;
+		CWnd* pWnd = GetDlgItem(::GetDlgCtrlID(hwndChild));//获取ID为woc的空间的句柄
+		pWnd->GetWindowRect(&rect);
+		ScreenToClient(&rect);//将控件大小转换为在对话框中的区域坐标
+		tempcon->Id = ::GetDlgCtrlID(hwndChild);//获得控件的ID;
+		tempcon->scale[0] = (double)rect.left / m_rect.Width();//注意类型转换，不然保存成long型就直接为0了
+		tempcon->scale[1] = (double)rect.right / m_rect.Width();
+		tempcon->scale[2] = (double)rect.top / m_rect.Height();
+		tempcon->scale[3] = (double)rect.bottom / m_rect.Height();
+		m_con_list.push_back(tempcon);
+		hwndChild = ::GetWindow(hwndChild, GW_HWNDNEXT);
+	}
 }

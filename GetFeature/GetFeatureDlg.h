@@ -7,6 +7,7 @@
 #include "CPiliangDlg.h"
 #include "CTezhengDlg.h"
 #include "CChachongDlg.h"
+#include <list>
 
 // CGetFeatureDlg 对话框
 class CGetFeatureDlg : public CDialogEx

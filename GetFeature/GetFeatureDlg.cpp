@@ -65,6 +65,7 @@ BEGIN_MESSAGE_MAP(CGetFeatureDlg, CDialogEx)
 	ON_WM_SYSCOMMAND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_WM_SIZE()
 	ON_NOTIFY(TCN_SELCHANGE, IDC_TAB1, &CGetFeatureDlg::OnTcnSelchangeTab1)
 END_MESSAGE_MAP()
 
@@ -153,6 +154,10 @@ void CGetFeatureDlg::OnSysCommand(UINT nID, LPARAM lParam)
 
 void CGetFeatureDlg::OnPaint()
 {
+	//CString show;
+	//show.Format(_T("%d"), IsIconic());
+	//MessageBox(show, NULL, MB_OK);
+
 	if (IsIconic())
 	{
 		CPaintDC dc(this); // 用于绘制的设备上下文
@@ -162,6 +167,11 @@ void CGetFeatureDlg::OnPaint()
 		// 使图标在工作区矩形中居中
 		int cxIcon = GetSystemMetrics(SM_CXICON);
 		int cyIcon = GetSystemMetrics(SM_CYICON);
+
+		CString show;
+		show.Format(_T("%d,%d"), cxIcon, cyIcon);
+		MessageBox(show, NULL, MB_OK);
+
 		CRect rect;
 		GetClientRect(&rect);
 		int x = (rect.Width() - cxIcon + 1) / 2;
@@ -230,3 +240,39 @@ void CGetFeatureDlg::OnTcnSelchangeTab1(NMHDR* pNMHDR, LRESULT* pResult)
 		break;
 	}
 }
+
+/*
+void CGetFeatureDlg::ReSize(void)
+{
+	float fsp[2];
+	POINT Newp; //获取现在对话框的大小
+	CRect recta;
+	GetClientRect(&recta);     //取客户区大小
+	Newp.x = recta.right - recta.left;
+	Newp.y = recta.bottom - recta.top;
+	fsp[0] = (float)Newp.x / old.x;
+	fsp[1] = (float)Newp.y / old.y;
+	CRect Rect;
+	int woc;
+	CPoint OldTLPoint, TLPoint; //左上角
+	CPoint OldBRPoint, BRPoint; //右下角
+	HWND  hwndChild = ::GetWindow(m_hWnd, GW_CHILD);  //列出所有控件
+	while (hwndChild)
+	{
+		woc = ::GetDlgCtrlID(hwndChild);//取得ID
+		GetDlgItem(woc)->GetWindowRect(Rect);
+		ScreenToClient(Rect);
+		OldTLPoint = Rect.TopLeft();
+		TLPoint.x = long(OldTLPoint.x * fsp[0]);
+		TLPoint.y = long(OldTLPoint.y * fsp[1]);
+		OldBRPoint = Rect.BottomRight();
+		BRPoint.x = long(OldBRPoint.x * fsp[0]);
+		BRPoint.y = long(OldBRPoint.y * fsp[1]);
+		Rect.SetRect(TLPoint, BRPoint);
+		GetDlgItem(woc)->MoveWindow(Rect, TRUE);
+		hwndChild = ::GetWindow(hwndChild, GW_HWNDNEXT);
+	}
+	old = Newp;
+	Invalidate(TRUE);
+}
+*/
