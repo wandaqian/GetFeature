@@ -53,107 +53,12 @@ BOOL CJiaohuDlg::OnInitDialog()
 	m_slider_seek.SetPos(0);
 	m_slider_seek.SetPageSize(10);//滚动条每次seek的间隔 //10秒
 	InitProgram();//初始化全局变量 编解码库 SDL初始化等
-
-	/*
-	CRect rect; // 设置控件随窗口变化
-	GetClientRect(&rect);     //取客户区大小  
-	old.x = rect.right - rect.left;
-	old.y = rect.bottom - rect.top;
-	int cx = GetSystemMetrics(SM_CXFULLSCREEN);
-	int cy = GetSystemMetrics(SM_CYFULLSCREEN);
-	CRect rt;
-	SystemParametersInfo(SPI_GETWORKAREA, 0, &rt, 0);
-	cy = rt.bottom;
-	MoveWindow(0, 0, cx, cy);
-	*/
-	//////////////////////////////////////////////////////////////////////////
 	InitVariable();
-	get_control_original_proportion();
+	get_control_original_proportion(); // 初始化窗口大小相关变量
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // 异常: OCX 属性页应返回 FALSE
 }
 
-
-/*
-void CJiaohuDlg::OnPaint()
-{
-	CString ss;
-	ss.Format(_T("%s"), IsIconic());
-	MessageBox(ss, NULL, MB_OK);
-	if (IsIconic())
-	{
-		CPaintDC dc(this); // device context for painting
-
-		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
-
-		// Center icon in client rectangle
-		int cxIcon = GetSystemMetrics(SM_CXICON);
-		int cyIcon = GetSystemMetrics(SM_CYICON);
-		CString show;
-		show.Format(_T("%d,%d"), cxIcon, cyIcon);
-		MessageBox(show, NULL, MB_OK);
-
-		CRect rect;
-		GetClientRect(&rect);
-		int x = (rect.Width() - cxIcon + 1) / 2;
-		int y = (rect.Height() - cyIcon + 1) / 2;
-
-		// Draw the icon
-		dc.DrawIcon(x, y, m_hIcon);
-	}
-	else
-	{
-		CDialog::OnPaint();
-	}
-}
-
-void CJiaohuDlg::ReSize(void)
-{
-	float fsp[2];
-	POINT Newp; //获取现在对话框的大小
-	CRect recta;
-	GetClientRect(&recta);     //取客户区大小  
-	Newp.x = recta.right - recta.left;
-	Newp.y = recta.bottom - recta.top;
-	fsp[0] = (float)Newp.x / old.x;
-	fsp[1] = (float)Newp.y / old.y;
-	CRect Rect;
-	int woc;
-	CPoint OldTLPoint, TLPoint; //左上角
-	CPoint OldBRPoint, BRPoint; //右下角
-	HWND  hwndChild = ::GetWindow(m_hWnd, GW_CHILD);  //列出所有控件  
-	while (hwndChild)
-	{
-		woc = ::GetDlgCtrlID(hwndChild);//取得ID
-		GetDlgItem(woc)->GetWindowRect(Rect);
-		ScreenToClient(Rect);
-		OldTLPoint = Rect.TopLeft();
-		TLPoint.x = long(OldTLPoint.x * fsp[0]);
-		TLPoint.y = long(OldTLPoint.y * fsp[1]);
-		OldBRPoint = Rect.BottomRight();
-		BRPoint.x = long(OldBRPoint.x * fsp[0]);
-		BRPoint.y = long(OldBRPoint.y * fsp[1]);
-		Rect.SetRect(TLPoint, BRPoint);
-		GetDlgItem(woc)->MoveWindow(Rect, TRUE);
-		hwndChild = ::GetWindow(hwndChild, GW_HWNDNEXT);
-	}
-	old = Newp;
-}
-
-void CJiaohuDlg::OnSize(UINT nType, int cx, int cy)
-{
-	CString onsizeS;
-	onsizeS.Format(_T("调用OnSize函数"));
-	MessageBox(onsizeS, NULL, MB_OK);
-
-	if (nType != SIZE_MINIMIZED)  //判断窗口是不是最小化了，因为窗口最小化之后 ，
-		//窗口的长和宽会变成0，当前一次变化的时就会出现除以0的错误操作
-	{
-		ReSize();
-	}
-	CDialogEx::OnSize(nType, cx, cy);
-}
-*/
 
 int SplitString(LPCTSTR lpszStr, LPCTSTR lpszSplit, CStringArray& rArrString, BOOL bAllowNullString)
 {
@@ -325,39 +230,7 @@ void CJiaohuDlg::OnBnClickedButtonOpen()
 	h_second = (int)m_file_duration % 60;
 	h_hour = (int)h_minute / 60;
 	h_minute = h_minute % 60;
-	if (h_hour < 10 && h_minute < 10 && h_second < 10)
-	{
-		str.Format(_T("0%d:0%d:0%d"), h_hour, h_minute, h_second);
-	}
-	else if (h_hour < 10 && h_minute < 10 && h_second >= 10)
-	{
-		str.Format(_T("0%d:0%d:%d"), h_hour, h_minute, h_second);
-	}
-	else if (h_hour < 10 && h_minute >= 10 && h_second >= 10)
-	{
-		str.Format(_T("0%d:%d:%d"), h_hour, h_minute, h_second);
-	}
-	else if (h_hour < 10 && h_minute >= 10 && h_second < 10)
-	{
-		str.Format(_T("0%d:%d:0%d"), h_hour, h_minute, h_second);
-	}
-	else if (h_hour >= 10 && h_minute < 10 && h_second < 10)
-	{
-		str.Format(_T("%d:0%d:0%d"), h_hour, h_minute, h_second);
-	}
-	else if (h_hour >= 10 && h_minute >= 10 && h_second < 10)
-	{
-		str.Format(_T("%d:%d:0%d"), h_hour, h_minute, h_second);
-	}
-	else if (h_hour >= 10 && h_minute < 10 && h_second >= 10)
-	{
-		str.Format(_T("%d:0%d:%d"), h_hour, h_minute, h_second);
-	}
-	else
-	{
-		str.Format(_T("%d:%d:%d"), h_hour, h_minute, h_second);
-	}
-	
+	str.Format(_T("%.2d:%.2d:%.2d"), h_hour, h_minute, h_second);
 	time_display.Format(_T("00:00:00/%s"), str);
 	GetDlgItem(IDC_EDIT_TIMELENGTH)->ShowWindow(SW_SHOW);
 	GetDlgItem(IDC_EDIT_TIMELENGTH)->SetWindowText(time_display);
@@ -404,38 +277,8 @@ void CJiaohuDlg::video_refresh(void* opaque)
 		h_second = (int)m_streamstate->video_clock % 60;
 		h_hour = (int)h_minute / 60;
 		h_minute = h_minute % 60;
-		if (h_hour < 10 && h_minute < 10 && h_second < 10)
-		{
-			curr.Format(_T("0%d:0%d:0%d"), h_hour, h_minute, h_second);
-		}
-		else if (h_hour < 10 && h_minute < 10 && h_second >= 10)
-		{
-			curr.Format(_T("0%d:0%d:%d"), h_hour, h_minute, h_second);
-		}
-		else if (h_hour < 10 && h_minute >= 10 && h_second >= 10)
-		{
-			curr.Format(_T("0%d:%d:%d"), h_hour, h_minute, h_second);
-		}
-		else if (h_hour < 10 && h_minute >= 10 && h_second < 10)
-		{
-			curr.Format(_T("0%d:%d:0%d"), h_hour, h_minute, h_second);
-		}
-		else if (h_hour >= 10 && h_minute < 10 && h_second < 10)
-		{
-			curr.Format(_T("%d:0%d:0%d"), h_hour, h_minute, h_second);
-		}
-		else if (h_hour >= 10 && h_minute >= 10 && h_second < 10)
-		{
-			curr.Format(_T("%d:%d:0%d"), h_hour, h_minute, h_second);
-		}
-		else if (h_hour >= 10 && h_minute < 10 && h_second >= 10)
-		{
-			curr.Format(_T("%d:0%d:%d"), h_hour, h_minute, h_second);
-		}
-		else
-		{
-			curr.Format(_T("%d:%d:%d"), h_hour, h_minute, h_second);
-		}
+		curr.Format(_T("%.2d:%.2d:%.2d"), h_hour, h_minute, h_second);
+		
 		if (m_Isstop) //如果已经停止
 		{
 			GetDlgItem(IDC_EDIT_TIMELENGTH)->ShowWindow(SW_HIDE);
