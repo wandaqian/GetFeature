@@ -48,7 +48,8 @@ BOOL CJiaohuDlg::OnInitDialog()
 	//m_IsAccess_control_position = Access_control_position();
 
 	// TODO:  在此添加额外的初始化
-		//初始化滚动条变量
+	/////////////////////////////////////////////////////////////////////////////
+	//初始化滚动条变量
 	m_slider_seek.SetPos(0);
 	m_slider_seek.SetPageSize(10);//滚动条每次seek的间隔 //10秒
 	m_combobox1.SetCurSel(0);
@@ -59,9 +60,12 @@ BOOL CJiaohuDlg::OnInitDialog()
 	InitProgram();
 	//////////////////////////////////////////////////////////////////////////
 	InitVariable();
+	get_control_original_proportion(); // 初始化窗口大小相关变量
 	return TRUE;  // return TRUE unless you set the focus to a control
 				  // 异常: OCX 属性页应返回 FALSE
 }
+
+
 int SplitString(LPCTSTR lpszStr, LPCTSTR lpszSplit, CStringArray& rArrString, BOOL bAllowNullString)
 {
 	rArrString.RemoveAll();
@@ -229,7 +233,7 @@ void CJiaohuDlg::OnBnClickedButtonOpen()
 	}
 	m_stream_type = 3;
 	//////////////////////////////////////////////////////////////////////////
-	//文件打开设置文件时常
+	//文件打开设置文件时长
 
 	
 	h_minute = (int)m_file_duration / 60;
@@ -247,7 +251,7 @@ void CJiaohuDlg::OnBnClickedButtonOpen()
 	m_streamstate->read_tid = SDL_CreateThread(read_thread, (void*)this);
 	if (!m_streamstate->read_tid)
 	{
-		MessageBox(_T("创建读取线程失败 清楚重新创建"), NULL, MB_OK);
+		MessageBox(_T("创建读取线程失败 清除重新创建"), NULL, MB_OK);
 		goto end;
 	}
 end:
@@ -1009,6 +1013,7 @@ fail:
 		//pDlg->m_fs_screen_width;
 		//pDlg->m_fs_screen_height; 
 		//AVPacket m_flush_pkt;
+		
 		pDlg->m_sourceFile = NULL;
 		pDlg->m_file_duration = 0.0;
 		pDlg->m_video_dec_ctx = NULL;
@@ -1634,28 +1639,49 @@ void CJiaohuDlg::OnSize(UINT nType, int cx, int cy)
 	
 }
 
+}
 
-void CJiaohuDlg::OnPaint()
+
+void CJiaohuDlg::OnSize(UINT nType, int cx, int cy)
 {
-	if (IsIconic())
+	if (nType != SIZE_MINIMIZED)  //判断窗口是不是最小化了，因为窗口最小化之后 ，
+			//窗口的长和宽会变成0，当前一次变化的时就会出现除以0的错误操作
 	{
-		CPaintDC dc(this); // device context for painting
 
-		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
+		CRect rect;// 获取当前窗口大小
+		for (std::list<control*>::iterator it = m_con_list.begin(); it != m_con_list.end(); it++) {
+			CWnd* pWnd = GetDlgItem((*it)->Id);//获取ID为woc的空间的句柄
+			pWnd->GetWindowRect(&rect);
+			ScreenToClient(&rect);//将控件大小转换为在对话框中的区域坐标
+			rect.left = (*it)->scale[0] * cx;
+			rect.right = (*it)->scale[1] * cx;
+			rect.top = (*it)->scale[2] * cy;
+			rect.bottom = (*it)->scale[3] * cy;
+			pWnd->MoveWindow(rect);//设置控件大小
+		}
 
-		// Center icon in client rectangle
-		int cxIcon = GetSystemMetrics(SM_CXICON);
-		int cyIcon = GetSystemMetrics(SM_CYICON);
-		CRect rect;
-		GetClientRect(&rect);
-		int x = (rect.Width() - cxIcon + 1) / 2;
-		int y = (rect.Height() - cyIcon + 1) / 2;
-
-		// Draw the icon
-		dc.DrawIcon(x, y, m_hIcon);
 	}
-	else
+	GetClientRect(&m_rect);//将变化后的对话框大小设为旧大小
+	CDialogEx::OnSize(nType, cx, cy);
+	Invalidate(TRUE);
+}
+
+static int i = 0;
+void CJiaohuDlg::get_control_original_proportion() {
+	HWND hwndChild = ::GetWindow(m_hWnd, GW_CHILD);
+	while (hwndChild)
 	{
-		CDialog::OnPaint();
+		CRect rect;//获取当前窗口的大小
+		control* tempcon = new control;
+		CWnd* pWnd = GetDlgItem(::GetDlgCtrlID(hwndChild));//获取ID为woc的空间的句柄
+		pWnd->GetWindowRect(&rect);
+		ScreenToClient(&rect);//将控件大小转换为在对话框中的区域坐标
+		tempcon->Id = ::GetDlgCtrlID(hwndChild);//获得控件的ID;
+		tempcon->scale[0] = (double)rect.left / m_rect.Width();//注意类型转换，不然保存成long型就直接为0了
+		tempcon->scale[1] = (double)rect.right / m_rect.Width();
+		tempcon->scale[2] = (double)rect.top / m_rect.Height();
+		tempcon->scale[3] = (double)rect.bottom / m_rect.Height();
+		m_con_list.push_back(tempcon);
+		hwndChild = ::GetWindow(hwndChild, GW_HWNDNEXT);
 	}
 }

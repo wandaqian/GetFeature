@@ -1,4 +1,7 @@
 ﻿#pragma once
+#include <list>
+
+
 
 //*************************** ffmpeg ***************************
 // LNK2019	无法解析的外部符号 SDL_main，该符号在函数 main_utf8 中被引用
@@ -102,6 +105,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	
+
 	CString curr;//当前时间的文本
 	CString str;     //文件总时常显示的文本
 	CEdit m_feature_folder_path;
@@ -153,7 +157,7 @@ public:
 	//创建打开窗口设置大小
 	int video_open(StreamState* is);
 	void onstop();
-public:
+\
 	int normal = 1;
 	int fast = 0;
 	int slow = 0;
@@ -199,9 +203,30 @@ public:
 	afx_msg void OnBnClickedButtonPlaySlowly();
 	afx_msg void OnBnClickedButtonPlayFast();
 	afx_msg void OnBnClickedButtonPlayFrame();
-	afx_msg void OnSize(UINT nType, int cx, int cy);
-	afx_msg void OnPaint();
-	CComboBox m_combobox1;
+
+	afx_msg void OnSize(UINT nType, int cx, int cy); //当窗口大小调整时调用
+	void get_control_original_proportion();
+	CRect m_rect;
+	typedef struct Rect {
+	public:
+		int Id;
+		double scale[4];
+
+		Rect() {
+			Id = -2;
+			scale[0] = 0;
+			scale[1] = 0;
+			scale[2] = 0;
+			scale[3] = 0;
+		}
+
+		Rect(const Rect& c) {
+			*this = c;
+		}
+	}control;
+	std::list<control*> m_con_list;
+
+
 };
 int read_thread(LPVOID lpParam);           //从文件读取音视频 创建刷新线程
 int refresh_thread(LPVOID lpParam);          //刷新线程
