@@ -28,6 +28,7 @@ void CJiaohuDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_LIST_VIDEOCLIP, m_listbox_videoclip);
 	DDX_Control(pDX, IDC_SLIDER_SEEK, m_slider_seek);
 	DDX_Control(pDX, IDC_PICTURE_PLAY, m_picture_static);
+	DDX_Control(pDX, IDC_COMBO_BOX1, m_combobox1);
 }
 
 
@@ -35,22 +36,26 @@ BEGIN_MESSAGE_MAP(CJiaohuDlg, CDialogEx)
 	ON_WM_HSCROLL()
 	ON_BN_CLICKED(IDC_BUTTON_OPEN, &CJiaohuDlg::OnBnClickedButtonOpen)
 	ON_BN_CLICKED(IDC_BUTTON_PLAY, &CJiaohuDlg::OnBnClickedButtonPlay)
-
-ON_BN_CLICKED(IDC_BUTTON_PLAY_SLOWLY, &CJiaohuDlg::OnBnClickedButtonPlaySlowly)
-ON_BN_CLICKED(IDC_BUTTON_PLAY_FAST, &CJiaohuDlg::OnBnClickedButtonPlayFast)
-ON_BN_CLICKED(IDC_BUTTON_PLAY_FRAME, &CJiaohuDlg::OnBnClickedButtonPlayFrame)
+	ON_BN_CLICKED(IDC_BUTTON_PLAY_SLOWLY, &CJiaohuDlg::OnBnClickedButtonPlaySlowly)
+	ON_BN_CLICKED(IDC_BUTTON_PLAY_FAST, &CJiaohuDlg::OnBnClickedButtonPlayFast)
+	ON_BN_CLICKED(IDC_BUTTON_PLAY_FRAME, &CJiaohuDlg::OnBnClickedButtonPlayFrame)
+	ON_WM_SIZE()
+	ON_WM_PAINT()
 END_MESSAGE_MAP()
 BOOL CJiaohuDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
-	GetDlgItem(IDC_EDIT_TIMELENGTH)->ShowWindow(SW_HIDE);
-	GetDlgItem(IDC_PROGRESS)->ShowWindow(SW_HIDE);
-	GetDlgItem(IDC_SLIDER_SEEK)->EnableWindow(FALSE);
+	//m_IsAccess_control_position = Access_control_position();
+
 	// TODO:  在此添加额外的初始化
 		//初始化滚动条变量
 	m_slider_seek.SetPos(0);
 	m_slider_seek.SetPageSize(10);//滚动条每次seek的间隔 //10秒
+	m_combobox1.SetCurSel(0);
 		//初始化全局变量 编解码库 SDL初始化等
+	GetDlgItem(IDC_EDIT_TIMELENGTH)->ShowWindow(SW_HIDE);
+	GetDlgItem(IDC_PROGRESS)->ShowWindow(SW_HIDE);
+	//GetDlgItem(IDC_SLIDER_SEEK)->EnableWindow(FALSE);
 	InitProgram();
 	//////////////////////////////////////////////////////////////////////////
 	InitVariable();
@@ -147,14 +152,8 @@ void CJiaohuDlg::OnBnClickedButtonOpen()
 		//输入信息错误写入
 		av_dump_format(m_streamstate->pFormatCtx, 0, m_sourceFile, 0);
 
-		//得到文件中时常
-		m_file_duration = m_streamstate->pFormatCtx->duration / 1000.0 / 1000.0; //从纳秒转换成秒
 
-		//如果没有文件总时常
-		if (m_file_duration < 0)
-		{
-			m_file_duration = 0;
-		}
+
 		//将文件信息填入列表框控件变量
 		CString szSplit = _T("\\");
 		CStringArray szList;
@@ -165,7 +164,17 @@ void CJiaohuDlg::OnBnClickedButtonOpen()
 		//得到视频信息的CONTEXT
 		if (Open_codec_context(&m_video_stream_idx, m_streamstate->pFormatCtx, AVMEDIA_TYPE_VIDEO) >= 0)
 		{
+		//得到文件中时常
+			
+
 			m_streamstate->video_st = m_streamstate->pFormatCtx->streams[m_video_stream_idx];
+			double video_time_base = av_q2d(m_streamstate->video_st->time_base);
+			m_file_duration = m_streamstate->video_st->duration * video_time_base;
+		//如果没有文件总时常
+			if (m_file_duration < 0)
+			{
+				m_file_duration = 0;
+			}
 			m_video_dec_ctx = m_streamstate->video_st->codec;
 			// Find the decoder for the video stream
 			m_pvideo_codec = avcodec_find_decoder(m_video_dec_ctx->codec_id);
@@ -187,8 +196,8 @@ void CJiaohuDlg::OnBnClickedButtonOpen()
 			if (m_dbFrameRate < 15 || m_dbFrameRate > 50)
 			{
 				//这种是MP3 有图片的
-				m_stream_type = 2;
-				m_dbFrameRate = 25.0;
+				//m_stream_type = 2;
+				//m_dbFrameRate = 25.0;
 			}
 			//宽高,视频编码类型,视频yuv类型,spspps_buf,spspps_size
 			m_dwWidth = m_streamstate->pFormatCtx->streams[m_video_stream_idx]->codec->width;
@@ -227,39 +236,7 @@ void CJiaohuDlg::OnBnClickedButtonOpen()
 	h_second = (int)m_file_duration % 60;
 	h_hour = (int)h_minute / 60;
 	h_minute = h_minute % 60;
-	if (h_hour < 10 && h_minute < 10 && h_second < 10)
-	{
-		str.Format(_T("0%d:0%d:0%d"), h_hour, h_minute, h_second);
-	}
-	else if (h_hour < 10 && h_minute < 10 && h_second >= 10)
-	{
-		str.Format(_T("0%d:0%d:%d"), h_hour, h_minute, h_second);
-	}
-	else if (h_hour < 10 && h_minute >= 10 && h_second >= 10)
-	{
-		str.Format(_T("0%d:%d:%d"), h_hour, h_minute, h_second);
-	}
-	else if (h_hour < 10 && h_minute >= 10 && h_second < 10)
-	{
-		str.Format(_T("0%d:%d:0%d"), h_hour, h_minute, h_second);
-	}
-	else if (h_hour >= 10 && h_minute < 10 && h_second < 10)
-	{
-		str.Format(_T("%d:0%d:0%d"), h_hour, h_minute, h_second);
-	}
-	else if (h_hour >= 10 && h_minute >= 10 && h_second < 10)
-	{
-		str.Format(_T("%d:%d:0%d"), h_hour, h_minute, h_second);
-	}
-	else if (h_hour >= 10 && h_minute < 10 && h_second >= 10)
-	{
-		str.Format(_T("%d:0%d:%d"), h_hour, h_minute, h_second);
-	}
-	else
-	{
-		str.Format(_T("%d:%d:%d"), h_hour, h_minute, h_second);
-	}
-	
+	str.Format(_T("%.2d:%.2d:%.2d"), h_hour, h_minute, h_second);
 	time_display.Format(_T("00:00:00/%s"), str);
 	GetDlgItem(IDC_EDIT_TIMELENGTH)->ShowWindow(SW_SHOW);
 	GetDlgItem(IDC_EDIT_TIMELENGTH)->SetWindowText(time_display);
@@ -289,7 +266,7 @@ void CJiaohuDlg::video_refresh(void* opaque)
 		return;
 	}
 	VideoPicture* vp;
-	double delay, diff;
+	double delay;
 
 	//////////////////////////////////////////////////////////////////////////
 		//设置当前时间显示
@@ -301,43 +278,13 @@ void CJiaohuDlg::video_refresh(void* opaque)
 	//如果只有视频
 	if (m_stream_type == 3)
 	{
+		Sleep(10);
 
 		h_minute = (int)m_streamstate->video_clock / 60;
 		h_second = (int)m_streamstate->video_clock % 60;
 		h_hour = (int)h_minute / 60;
 		h_minute = h_minute % 60;
-		if (h_hour < 10 && h_minute < 10 && h_second < 10)
-		{
-			curr.Format(_T("0%d:0%d:0%d"), h_hour, h_minute, h_second);
-		}
-		else if (h_hour < 10 && h_minute < 10 && h_second >= 10)
-		{
-			curr.Format(_T("0%d:0%d:%d"), h_hour, h_minute, h_second);
-		}
-		else if (h_hour < 10 && h_minute >= 10 && h_second >= 10)
-		{
-			curr.Format(_T("0%d:%d:%d"), h_hour, h_minute, h_second);
-		}
-		else if (h_hour < 10 && h_minute >= 10 && h_second < 10)
-		{
-			curr.Format(_T("0%d:%d:0%d"), h_hour, h_minute, h_second);
-		}
-		else if (h_hour >= 10 && h_minute < 10 && h_second < 10)
-		{
-			curr.Format(_T("%d:0%d:0%d"), h_hour, h_minute, h_second);
-		}
-		else if (h_hour >= 10 && h_minute >= 10 && h_second < 10)
-		{
-			curr.Format(_T("%d:%d:0%d"), h_hour, h_minute, h_second);
-		}
-		else if (h_hour >= 10 && h_minute < 10 && h_second >= 10)
-		{
-			curr.Format(_T("%d:0%d:%d"), h_hour, h_minute, h_second);
-		}
-		else
-		{
-			curr.Format(_T("%d:%d:%d"), h_hour, h_minute, h_second);
-		}
+		curr.Format(_T("%.2d:%.2d:%.2d"), h_hour, h_minute, h_second);
 		if (m_Isstop) //如果已经停止
 		{
 			GetDlgItem(IDC_EDIT_TIMELENGTH)->ShowWindow(SW_HIDE);
@@ -371,7 +318,7 @@ void CJiaohuDlg::video_refresh(void* opaque)
 			delay = m_video_duration;
 			if (normal)
 			{
-				Sleep(delay * 1000);	
+				Sleep(delay * 1100);	
 			}
 			else if (fast) {
 				Sleep(delay * 500);
@@ -431,7 +378,10 @@ int refresh_thread(LPVOID lpParam)
 	while (!pDlg->m_Isstop)
 	{
 		//添加刷新函数
-		pDlg->video_refresh(pDlg->m_streamstate);
+		if (pDlg->m_pause_play) {
+			pDlg->video_refresh(pDlg->m_streamstate);
+		}
+		
 		//FIXME ideally we should wait the correct time but SDLs event passing m_streamstate so slow it would be silly
 	}
 	return 0;
@@ -1520,10 +1470,24 @@ int CJiaohuDlg::Open_codec_context(int* stream_idx, AVFormatContext* fmt_ctx, en
 	}
 	return 0;
 }
+
+int CJiaohuDlg::Access_control_position()
+{
+
+
+	//进度条初始化的位置
+	GetDlgItem(IDC_SLIDER_SEEK)->GetWindowRect(&m_rect_SLIDER_PLAYL);//获取控件相对于屏幕的位置
+	ScreenToClient(m_rect_SLIDER_PLAYL);//转化为对话框上的相对位置
+	m_width_SLIDER_PLAYL = m_rect_SLIDER_PLAYL.right - m_rect_SLIDER_PLAYL.left;  //width为button的宽
+	m_height_SLIDER_PLAY = m_rect_SLIDER_PLAYL.bottom - m_rect_SLIDER_PLAYL.top; //height为button的高
+
+	return 1;
+}
 void CJiaohuDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
 	// TODO: Add your message handler code here and/or call default
-
+	
+	m_slider_pos = m_slider_seek.GetPos();
 	if (pScrollBar->GetSafeHwnd() == m_slider_seek.GetSafeHwnd())        //如果是 文件播放进度条
 	{
 		//?? seek后的文件结束时间可以优化用video->clock代表文件当前播放的时间 和文件结束时间不匹配
@@ -1536,6 +1500,7 @@ void CJiaohuDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 			m_pause_play = !m_pause_play;
 		}
 		//////////////////////////////////////////////////////////////////////////
+
 		if (nSBCode == SB_ENDSCROLL) //结束滚动  
 		{
 			m_streamstate->seek_time = m_slider_pos - (int)(m_streamstate->video_clock);  //获取改变的时常 可能是整数也可能是负数
@@ -1553,27 +1518,14 @@ void CJiaohuDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 			}
 			//////////////////////////////////////////////////////////////////////////
 		}
-		else
-		{
-			m_slider_pos = m_slider_seek.GetPos();
-		}
+	
+
+
+
 	}
 
 	CDialog::OnHScroll(nSBCode, nPos, pScrollBar);
 }
-int CJiaohuDlg::Access_control_position()
-{
-
-
-	//进度条初始化的位置
-	GetDlgItem(IDC_SLIDER_SEEK)->GetWindowRect(&m_rect_SLIDER_PLAYL);//获取控件相对于屏幕的位置
-	ScreenToClient(m_rect_SLIDER_PLAYL);//转化为对话框上的相对位置
-	m_width_SLIDER_PLAYL = m_rect_SLIDER_PLAYL.right - m_rect_SLIDER_PLAYL.left;  //width为button的宽
-	m_height_SLIDER_PLAY = m_rect_SLIDER_PLAYL.bottom - m_rect_SLIDER_PLAYL.top; //height为button的高
-
-	return 1;
-}
-
 void CJiaohuDlg::OnBnClickedButtonPlay()
 {
 	// TODO: 在此添加控件通知处理程序代码
@@ -1655,7 +1607,55 @@ void CJiaohuDlg::OnBnClickedButtonPlayFrame()
 	{
 		//暂停
 		SDL_PauseAudio(1);
-		GetDlgItem(IDC_BUTTON_PLAY)->SetWindowText(_T("播放"));
+		//GetDlgItem(IDC_BUTTON_PLAY)->SetWindowText(_T("播放"));
+		m_pause_play = !m_pause_play;
 	}
+	
+	SDL_PauseAudio(0);
 
+	m_pause_play = !m_pause_play;
+	Sleep(m_video_duration * 1000);
+	SDL_PauseAudio(1);
+	m_pause_play = !m_pause_play;
+}
+
+
+void CJiaohuDlg::OnSize(UINT nType, int cx, int cy)
+{
+	CDialogEx::OnSize(nType, cx, cy);
+
+	// TODO: 在此处添加消息处理程序代码
+	//进度条位置调整 
+	if (m_IsAccess_control_position == 1)
+	{
+		GetDlgItem(IDC_SLIDER_SEEK)->MoveWindow(m_rect_SLIDER_PLAYL.left, cy - m_height_SLIDER_PLAY - (m_height_BMAINFRAME - m_rect_SLIDER_PLAYL.bottom),
+		cx - 2 * (m_width_MAINFRAME - m_rect_SLIDER_PLAYL.right), m_height_SLIDER_PLAY);
+	}
+	
+}
+
+
+void CJiaohuDlg::OnPaint()
+{
+	if (IsIconic())
+	{
+		CPaintDC dc(this); // device context for painting
+
+		SendMessage(WM_ICONERASEBKGND, reinterpret_cast<WPARAM>(dc.GetSafeHdc()), 0);
+
+		// Center icon in client rectangle
+		int cxIcon = GetSystemMetrics(SM_CXICON);
+		int cyIcon = GetSystemMetrics(SM_CYICON);
+		CRect rect;
+		GetClientRect(&rect);
+		int x = (rect.Width() - cxIcon + 1) / 2;
+		int y = (rect.Height() - cyIcon + 1) / 2;
+
+		// Draw the icon
+		dc.DrawIcon(x, y, m_hIcon);
+	}
+	else
+	{
+		CDialog::OnPaint();
+	}
 }

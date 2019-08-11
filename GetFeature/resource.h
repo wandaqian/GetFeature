@@ -2,11 +2,6 @@
 // Microsoft Visual C++ 生成的包含文件。
 // 供 GetFeature.rc 使用
 //
-#define IDC_EDIT_TIMELENGTH              1045
-#define IDC_SLIDER_SEEK              1011
-#define IDC_PROGRESS              1046
-#define IDC_LIST_VIDEOCLIP              1027
-#define IDC_BUTTON_START                 1013
 #define SW_HIDE                         0
 #define HIDE_WINDOW                     0
 #define WM_NULL                         0x0000
@@ -1263,7 +1258,9 @@
 #define WM_DDE_FIRST                    0x03E0
 #define IDC_TAB1                        1000
 #define IDC_BUTTON1                     1001
+#define IDC_SLIDER_SEEK                 1011
 #define IDC_BUTTON_PLAY                 1012
+#define IDC_BUTTON_START                1013
 #define CF_GDIOBJLAST                   0x03FF
 #define _WIN32_WINNT_NT4                0x0400
 #define _WIN32_IE_IE40                  0x0400
@@ -1282,6 +1279,7 @@
 #define _WIN32_IE_IE401                 0x0401
 #define psh2                            0x0401
 #define psh3                            0x0402
+#define IDC_LIST_VIDEOCLIP              1027
 #define psh4                            0x0403
 #define psh5                            0x0404
 #define psh6                            0x0405
@@ -1305,7 +1303,9 @@
 #define IDC_BUTTON_PLAY_SLOWLY          1043
 #define chx5                            0x0414
 #define IDC_BUTTON_PLAY_FAST            1044
+#define IDC_EDIT_TIMELENGTH             1045
 #define chx6                            0x0415
+#define IDC_PROGRESS                    1046
 #define chx7                            0x0416
 #define IDC_BUTTON_OPEN                 1047
 #define chx8                            0x0417
@@ -1324,6 +1324,7 @@
 #define rad2                            0x0421
 #define rad3                            0x0422
 #define rad4                            0x0423
+#define IDC_COMBO_BOX1                  1059
 #define rad5                            0x0424
 #define rad6                            0x0425
 #define rad7                            0x0426

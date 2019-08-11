@@ -1,19 +1,13 @@
 ﻿#pragma once
 
-
-
-
 //*************************** ffmpeg ***************************
 // LNK2019	无法解析的外部符号 SDL_main，该符号在函数 main_utf8 中被引用
-#define SDL_MAIN_HANDLED 
 
-//Refresh Event
-#define SFM_REFRESH_EVENT     (SDL_USEREVENT + 1)
-#define SFM_BREAK_EVENT       (SDL_USEREVENT + 2)
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
 #include <math.h>
+#include "MySlider.h"
 
 extern "C" {
 #include "libavformat/avformat.h"
@@ -104,10 +98,10 @@ public:
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV 支持
-
+	HICON m_hIcon;
 	DECLARE_MESSAGE_MAP()
 public:
-
+	
 	CString curr;//当前时间的文本
 	CString str;     //文件总时常显示的文本
 	CEdit m_feature_folder_path;
@@ -116,6 +110,7 @@ public:
 	int m_IsAccess_control_position;        //是否已经获取了控件的初始化位置
 	int m_width_MAINFRAME;                  //主窗口的宽
 	int m_height_BMAINFRAME;                //主窗口的高
+
 	int Access_control_position();
 	//程序启动做的初始化 打开编解码库 SDL初始化等,创建默认窗口  //只调用一次
 	int InitProgram();
@@ -193,23 +188,21 @@ public:
 	int m_width_SLIDER_PLAYL;               //进度条的宽
 	int m_height_SLIDER_PLAY;               //进度条的高
 
-
-//public:
-	//CListCtrl m_listControl;                 //显示视频信息的列表框控件变量
-	//CSliderCtrl m_sliderPlay;                //进度条变量
-	//CStatic m_picture_static;                //播放区域指针
 	afx_msg void OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar); //进度条控制
 	afx_msg void OnBnClickedButtonOpen();
 	CListBox m_listbox_videoclip;
-	CSliderCtrl m_slider_seek;
+	//CSliderCtrl m_slider_seek;
+	MySlider m_slider_seek;
 	CStatic m_picture_static;
 	CRect m_Picture_rect;                    //显示图像的区域大小
 	afx_msg void OnBnClickedButtonPlay();
-//	afx_msg void OnSize(UINT nType, int cx, int cy);
 	afx_msg void OnBnClickedButtonPlaySlowly();
 	afx_msg void OnBnClickedButtonPlayFast();
 	afx_msg void OnBnClickedButtonPlayFrame();
+	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnPaint();
+	CComboBox m_combobox1;
 };
 int read_thread(LPVOID lpParam);           //从文件读取音视频 创建刷新线程
 int refresh_thread(LPVOID lpParam);          //刷新线程
-int video_thread(void* arg);                                            //视频解码线程将解码后的数据传入VideoPicture结构体
+int video_thread(void* arg);               //视频解码线程将解码后的数据传入VideoPicture结构体
