@@ -1624,22 +1624,23 @@ void CJiaohuDlg::OnBnClickedButtonPlayFrame()
 	m_pause_play = !m_pause_play;
 }
 
-
+/*
 void CJiaohuDlg::OnSize(UINT nType, int cx, int cy)
 {
 	CDialogEx::OnSize(nType, cx, cy);
 
 	// TODO: 在此处添加消息处理程序代码
-	//进度条位置调整 
+	//进度条位置调整
 	if (m_IsAccess_control_position == 1)
 	{
 		GetDlgItem(IDC_SLIDER_SEEK)->MoveWindow(m_rect_SLIDER_PLAYL.left, cy - m_height_SLIDER_PLAY - (m_height_BMAINFRAME - m_rect_SLIDER_PLAYL.bottom),
 		cx - 2 * (m_width_MAINFRAME - m_rect_SLIDER_PLAYL.right), m_height_SLIDER_PLAY);
 	}
-	
-}
 
 }
+*/
+
+
 
 
 void CJiaohuDlg::OnSize(UINT nType, int cx, int cy)

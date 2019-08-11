@@ -227,6 +227,7 @@ public:
 	std::list<control*> m_con_list;
 
 
+	CComboBox m_combobox1;
 };
 int read_thread(LPVOID lpParam);           //从文件读取音视频 创建刷新线程
 int refresh_thread(LPVOID lpParam);          //刷新线程
